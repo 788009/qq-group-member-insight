@@ -5,45 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>QQ 群聊数据洞察</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#1e293b', // 自定义深色背景
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // 初始化主题，防止闪屏
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     <style>
+        /* 滚动条适配 */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
         .mobile-hide { display: none; }
         @media (min-width: 768px) { .mobile-hide { display: block; } }
+        
         .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; }
-        /* 移动端优化：去除某些内部滚动条，统一使用页面滚动 */
+        .dark .tab-active { border-bottom: 2px solid #60a5fa; color: #60a5fa; }
+
+        /* 移动端优化 */
         @media (max-width: 768px) {
             .mobile-auto-height { height: auto !important; overflow: visible !important; }
-            .mobile-sticky-nav { position: sticky; bottom: 0; z-index: 40; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); }
+            .mobile-sticky-nav { position: sticky; bottom: 0; z-index: 40; }
+            /* 浅色模式背景模糊 */
+            .mobile-sticky-nav { background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); }
+            /* 深色模式背景模糊 */
+            .dark .mobile-sticky-nav { background: rgba(15, 23, 42, 0.95); }
         }
     </style>
 </head>
-<body class="bg-gray-50 text-slate-800 h-screen flex flex-col overflow-hidden font-sans">
+<body class="bg-gray-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 h-screen flex flex-col overflow-hidden font-sans transition-colors duration-200">
 
     <!-- 顶部导航栏 -->
-    <header class="bg-white border-b border-gray-200 h-14 flex items-center justify-between px-4 shrink-0 z-20 shadow-sm">
+    <header class="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 h-14 flex items-center justify-between px-4 shrink-0 z-20 shadow-sm transition-colors duration-200">
         <div class="flex items-center gap-2">
-            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">Q</div>
-            <h1 class="font-bold text-lg tracking-tight">GroupInsight</h1>
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/30">Q</div>
+            <h1 class="font-bold text-lg tracking-tight dark:text-white">GroupInsight</h1>
         </div>
         
-        <!-- 用户选择器 -->
         <div class="flex items-center gap-3">
+            <!-- 主题切换按钮 -->
+            <button onclick="toggleTheme()" class="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors focus:outline-none" title="切换深色/浅色模式">
+                <!-- Sun Icon -->
+                <svg id="icon-sun" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <!-- Moon Icon -->
+                <svg id="icon-moon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+            </button>
+
+            <!-- 用户选择器 -->
             <div class="relative group">
                 <button onclick="document.getElementById('user-selector-menu').classList.toggle('hidden')" 
-                        class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full text-sm font-medium transition">
-                    <span id="current-user-display">选择数据源</span>
-                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-full text-sm font-medium transition-colors border border-transparent dark:border-slate-700">
+                    <span id="current-user-display" class="dark:text-slate-300">选择数据源</span>
+                    <svg class="w-4 h-4 text-gray-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 <!-- 下拉菜单 -->
-                <div id="user-selector-menu" class="hidden absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 p-2 z-50">
+                <div id="user-selector-menu" class="hidden absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-gray-100 dark:border-slate-800 p-2 z-50">
                     <div class="text-xs font-bold text-gray-400 px-2 py-1 uppercase">已导入的 QQ</div>
                     <div id="user-list-container" class="max-h-48 overflow-y-auto space-y-1 mb-2">
                         <!-- JS 填充 -->
                     </div>
-                    <div class="border-t border-gray-100 pt-2">
-                        <button onclick="openManageModal()" class="w-full text-left px-2 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg flex items-center gap-2">
+                    <div class="border-t border-gray-100 dark:border-slate-800 pt-2">
+                        <button onclick="openManageModal()" class="w-full text-left px-2 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg flex items-center gap-2 transition-colors">
                             <span>+ 管理/添加新用户</span>
                         </button>
                     </div>
@@ -53,66 +95,59 @@
     </header>
 
     <!-- 主体内容 -->
-    <!-- 移动端：overflow-y-auto 允许页面滚动；桌面端：overflow-hidden 固定高度，内部滚动 -->
-    <main class="flex-1 relative overflow-y-auto md:overflow-hidden scroll-smooth" id="main-area">
-        <!-- 如果没有选择用户，显示空状态 -->
-        <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 bg-gray-50">
-            <div class="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-4 text-4xl">📂</div>
-            <h2 class="text-xl font-bold text-gray-700">请选择或导入数据</h2>
-            <p class="text-gray-500 mt-2 max-w-xs text-sm">选择一个 QQ 号的数据集开始分析，或者点击右上角添加新数据。</p>
+    <main class="flex-1 relative overflow-y-auto md:overflow-hidden scroll-smooth transition-colors duration-200" id="main-area">
+        <!-- 空状态 -->
+        <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 bg-gray-50 dark:bg-slate-950">
+            <div class="w-20 h-20 bg-gray-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 text-4xl">📂</div>
+            <h2 class="text-xl font-bold text-gray-700 dark:text-slate-200">请选择或导入数据</h2>
+            <p class="text-gray-500 dark:text-slate-400 mt-2 max-w-xs text-sm">选择一个 QQ 号的数据集开始分析，或者点击右上角添加新数据。</p>
             <button onclick="openManageModal()" class="mt-6 px-6 py-2.5 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition font-medium">去管理数据</button>
         </div>
 
         <!-- 分析界面 (默认隐藏) -->
-        <!-- 移动端：min-h-full 让内容撑开；桌面端：h-full 固定高度 -->
         <div id="analysis-view" class="hidden min-h-full md:h-full flex flex-col md:flex-row">
             
             <!-- 侧边栏/底部栏 -->
-            <!-- 移动端：sticky bottom-0 固定在底部，方便切换 -->
-            <nav class="bg-white border-t md:border-t-0 md:border-r border-gray-200 md:w-64 shrink-0 flex md:flex-col justify-around md:justify-start p-2 md:p-4 z-30 order-2 md:order-1 mobile-sticky-nav shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none">
-                <button onclick="switchTab('tab1')" id="nav-tab1" class="flex flex-col md:flex-row items-center md:gap-3 p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition active-nav">
+            <nav class="bg-white dark:bg-slate-900 border-t md:border-t-0 md:border-r border-gray-200 dark:border-slate-800 md:w-64 shrink-0 flex md:flex-col justify-around md:justify-start p-2 md:p-4 z-30 order-2 md:order-1 mobile-sticky-nav shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none transition-colors duration-200">
+                <button onclick="switchTab('tab1')" id="nav-tab1" class="flex flex-col md:flex-row items-center md:gap-3 p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition active-nav">
                     <span class="text-xl">🏆</span>
                     <span class="text-xs md:text-sm font-medium">活跃排行</span>
                 </button>
-                <button onclick="switchTab('tab2')" id="nav-tab2" class="flex flex-col md:flex-row items-center md:gap-3 p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition">
+                <button onclick="switchTab('tab2')" id="nav-tab2" class="flex flex-col md:flex-row items-center md:gap-3 p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition">
                     <span class="text-xl">🕸️</span>
                     <span class="text-xs md:text-sm font-medium">群渗透度</span>
                 </button>
-                <button onclick="switchTab('tab3')" id="nav-tab3" class="flex flex-col md:flex-row items-center md:gap-3 p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition">
+                <button onclick="switchTab('tab3')" id="nav-tab3" class="flex flex-col md:flex-row items-center md:gap-3 p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition">
                     <span class="text-xl">🔗</span>
                     <span class="text-xs md:text-sm font-medium">多群交集</span>
                 </button>
             </nav>
 
             <!-- 内容显示区 -->
-            <div class="flex-1 bg-gray-50 relative order-1 md:order-2 md:overflow-hidden">
+            <div class="flex-1 bg-gray-50 dark:bg-slate-950 relative order-1 md:order-2 md:overflow-hidden transition-colors duration-200">
                 
                 <!-- Tab 1: 活跃用户 -->
-                <!-- 移动端：h-auto 自然高度；桌面端：h-full 内部滚动 -->
                 <div id="tab1" class="w-full min-h-full md:h-full flex flex-col p-4 md:p-8 md:overflow-y-auto">
                     <div class="mb-4">
-                        <h2 class="text-xl font-bold">活跃用户排行</h2>
-                        <p class="text-sm text-gray-500">加群数量 >= 2 的用户</p>
+                        <h2 class="text-xl font-bold dark:text-white">活跃用户排行</h2>
+                        <p class="text-sm text-gray-500 dark:text-slate-400">加群数量 >= 2 的用户</p>
                     </div>
                     <div id="tab1-content" class="space-y-3 pb-4 md:pb-20"></div>
                 </div>
 
                 <!-- Tab 2: 渗透分析 -->
                 <div id="tab2" class="hidden w-full min-h-full md:h-full flex flex-col p-4 md:p-8 md:overflow-hidden">
-                    <h2 class="text-xl font-bold mb-4">群成员渗透分析</h2>
-                    <!-- 移动端：flex-col，去除固定高度限制；桌面端：flex-row h-full -->
+                    <h2 class="text-xl font-bold mb-4 dark:text-white">群成员渗透分析</h2>
                     <div class="flex flex-col md:flex-row gap-4 md:h-full pb-4 md:pb-20">
                         <!-- 搜索框区域 -->
-                        <div class="md:w-1/3 flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden shrink-0 h-80 md:h-auto">
-                            <input type="text" placeholder="搜索群聊..." oninput="debounceSearch(this.value, 'search-res-2')" class="p-3 border-b border-gray-100 outline-none text-sm shrink-0">
+                        <div class="md:w-1/3 flex flex-col bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 overflow-hidden shrink-0 h-80 md:h-auto">
+                            <input type="text" placeholder="搜索群聊..." oninput="debounceSearch(this.value, 'search-res-2')" class="p-3 border-b border-gray-100 dark:border-slate-800 bg-transparent outline-none text-sm shrink-0 dark:text-slate-200 dark:placeholder-slate-500">
                             <div id="search-res-2" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
                         </div>
                         
                         <!-- 结果区域 -->
-                        <!-- 移动端：h-auto (由内容撑开)，overflow-visible；桌面端：flex-col overflow-hidden -->
-                        <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-auto md:overflow-hidden">
-                            <div class="p-3 border-b border-gray-100 bg-gray-50 font-medium text-sm shrink-0 sticky top-0 z-10" id="tab2-header">请选择群聊</div>
-                            <!-- 移动端：h-auto；桌面端：flex-1 overflow-y-auto -->
+                        <div class="flex-1 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 flex flex-col h-auto md:overflow-hidden">
+                            <div class="p-3 border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 font-medium text-sm shrink-0 sticky top-0 z-10 dark:text-slate-300" id="tab2-header">请选择群聊</div>
                             <div id="tab2-content" class="p-3 space-y-2 h-auto md:flex-1 md:overflow-y-auto"></div>
                         </div>
                     </div>
@@ -120,26 +155,26 @@
 
                 <!-- Tab 3: 交集 -->
                 <div id="tab3" class="hidden w-full min-h-full md:h-full flex flex-col p-4 md:p-8 md:overflow-hidden">
-                    <h2 class="text-xl font-bold mb-4">多群交集查询</h2>
+                    <h2 class="text-xl font-bold mb-4 dark:text-white">多群交集查询</h2>
                     <div class="flex flex-col md:flex-row gap-4 md:h-full pb-4 md:pb-20">
                         <!-- 输入与选择区域 -->
-                        <div class="md:w-1/3 flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden shrink-0 h-auto md:h-full">
+                        <div class="md:w-1/3 flex flex-col bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 overflow-hidden shrink-0 h-auto md:h-full">
                             <div class="p-3">
-                                <input type="text" placeholder="添加群聊..." oninput="debounceSearch(this.value, 'search-res-3')" class="w-full p-2 border border-gray-200 rounded text-sm mb-2 outline-none focus:border-blue-500">
-                                <div id="search-res-3" class="h-32 md:h-48 overflow-y-auto border border-gray-100 rounded bg-gray-50 mb-2 p-1"></div>
-                                <div class="flex justify-between items-center text-sm font-bold text-gray-700 mb-2">
+                                <input type="text" placeholder="添加群聊..." oninput="debounceSearch(this.value, 'search-res-3')" class="w-full p-2 border border-gray-200 dark:border-slate-700 rounded text-sm mb-2 outline-none focus:border-blue-500 dark:bg-slate-950 dark:text-slate-200 dark:placeholder-slate-500">
+                                <div id="search-res-3" class="h-32 md:h-48 overflow-y-auto border border-gray-100 dark:border-slate-800 rounded bg-gray-50 dark:bg-slate-950 mb-2 p-1"></div>
+                                <div class="flex justify-between items-center text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
                                     <span>已选: <span id="sel-count">0</span></span>
-                                    <button onclick="runIntersection()" class="text-xs bg-blue-600 text-white px-3 py-1 rounded">分析</button>
+                                    <button onclick="runIntersection()" class="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition">分析</button>
                                 </div>
                                 <div id="sel-list" class="flex-1 overflow-y-auto space-y-1 min-h-[100px] max-h-[200px] md:max-h-none"></div>
                             </div>
                         </div>
                         
                         <!-- 结果区域 -->
-                        <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-auto md:overflow-hidden">
-                            <div class="p-3 border-b border-gray-100 bg-gray-50 font-medium text-sm flex justify-between shrink-0 sticky top-0 z-10">
+                        <div class="flex-1 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-800 flex flex-col h-auto md:overflow-hidden">
+                            <div class="p-3 border-b border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-950 font-medium text-sm flex justify-between shrink-0 sticky top-0 z-10 dark:text-slate-300">
                                 <span>结果列表</span>
-                                <span id="tab3-res-count" class="text-gray-500">0 人</span>
+                                <span id="tab3-res-count" class="text-gray-500 dark:text-slate-400">0 人</span>
                             </div>
                             <div id="tab3-content" class="p-3 grid grid-cols-2 lg:grid-cols-4 gap-3 content-start h-auto md:flex-1 md:overflow-y-auto"></div>
                         </div>
@@ -149,71 +184,71 @@
         </div>
     </main>
 
-    <!-- 管理模态框 (Full Screen on Mobile) -->
-    <div id="manage-modal" class="hidden fixed inset-0 z-50 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-0 md:p-4">
-        <div class="bg-white w-full h-full md:h-auto md:max-w-2xl md:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fade-in-up">
-            <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-                <h3 class="font-bold text-lg">数据管理</h3>
-                <button onclick="document.getElementById('manage-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">✕</button>
+    <!-- 管理模态框 -->
+    <div id="manage-modal" class="hidden fixed inset-0 z-50 bg-gray-900/50 dark:bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-0 md:p-4">
+        <div class="bg-white dark:bg-slate-900 w-full h-full md:h-auto md:max-w-2xl md:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-fade-in-up transition-colors duration-200">
+            <div class="p-4 border-b border-gray-200 dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-950">
+                <h3 class="font-bold text-lg dark:text-white">数据管理</h3>
+                <button onclick="document.getElementById('manage-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 dark:hover:text-slate-300">✕</button>
             </div>
             
-            <div class="flex border-b border-gray-200 text-sm font-medium text-gray-600">
-                <button onclick="switchManageTab('m-termux')" class="flex-1 py-3 hover:bg-gray-50 manage-tab-btn border-b-2 border-blue-600 text-blue-600" data-target="m-termux">Termux 一键</button>
-                <button onclick="switchManageTab('m-manual')" class="flex-1 py-3 hover:bg-gray-50 manage-tab-btn border-b-2 border-transparent" data-target="m-manual">文件处理</button>
-                <button onclick="switchManageTab('m-json')" class="flex-1 py-3 hover:bg-gray-50 manage-tab-btn border-b-2 border-transparent" data-target="m-json">JSON 导入</button>
+            <div class="flex border-b border-gray-200 dark:border-slate-800 text-sm font-medium text-gray-600 dark:text-slate-400">
+                <button onclick="switchManageTab('m-termux')" class="flex-1 py-3 hover:bg-gray-50 dark:hover:bg-slate-800 manage-tab-btn border-b-2 border-blue-600 text-blue-600 dark:text-blue-400" data-target="m-termux">Termux 一键</button>
+                <button onclick="switchManageTab('m-manual')" class="flex-1 py-3 hover:bg-gray-50 dark:hover:bg-slate-800 manage-tab-btn border-b-2 border-transparent" data-target="m-manual">文件处理</button>
+                <button onclick="switchManageTab('m-json')" class="flex-1 py-3 hover:bg-gray-50 dark:hover:bg-slate-800 manage-tab-btn border-b-2 border-transparent" data-target="m-json">JSON 导入</button>
             </div>
 
-            <div class="flex-1 overflow-y-auto p-6 bg-white">
+            <div class="flex-1 overflow-y-auto p-6 bg-white dark:bg-slate-900">
                 <!-- Termux 模式 -->
                 <div id="m-termux" class="manage-content space-y-4">
-                    <div class="bg-blue-50 text-blue-800 p-3 rounded-lg text-sm">
+                    <div class="bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 p-3 rounded-lg text-sm">
                         此功能仅在已 Root 的安卓设备 Termux (tsu环境) 下可用。会自动从 QQ 目录复制并解密数据。
                     </div>
                     <div id="termux-uid-list" class="space-y-2">
-                        <div class="text-center py-4 text-gray-400">正在扫描本地 QQ...</div>
+                        <div class="text-center py-4 text-gray-400 dark:text-slate-500">正在扫描本地 QQ...</div>
                     </div>
-                    <label class="flex items-center gap-2 text-sm mt-4">
-                        <input type="checkbox" id="termux-clean" class="rounded text-blue-600">
+                    <label class="flex items-center gap-2 text-sm mt-4 dark:text-slate-300">
+                        <input type="checkbox" id="termux-clean" class="rounded text-blue-600 dark:bg-slate-800 dark:border-slate-600">
                         <span>完成后删除中间文件 (推荐)</span>
                     </label>
                 </div>
 
                 <!-- Manual 模式 -->
                 <div id="m-manual" class="hidden manage-content space-y-4">
-                    <div class="text-sm text-gray-600 space-y-2">
+                    <div class="text-sm text-gray-600 dark:text-slate-400 space-y-2">
                         <p>请将相关文件手动放入 <code>./data/{QQ号}/</code> 目录。</p>
-                        <p><a href="https://docs.aaqwq.top/decrypt/description.html" target="_blank" class="text-blue-600 underline">查看解密教程 & key获取</a></p>
+                        <p><a href="https://docs.aaqwq.top/decrypt/description.html" target="_blank" class="text-blue-600 dark:text-blue-400 underline">查看解密教程 & key获取</a></p>
                     </div>
                     <div class="grid gap-3">
                         <div class="flex gap-2">
-                            <input type="text" id="manual-qq" placeholder="输入目标 QQ 号" class="border p-2 rounded flex-1">
-                            <button onclick="createUserFolder('manual-qq')" class="bg-gray-200 hover:bg-gray-300 px-3 rounded text-sm text-gray-700 whitespace-nowrap">创建文件夹</button>
+                            <input type="text" id="manual-qq" placeholder="输入目标 QQ 号" class="border p-2 rounded flex-1 dark:bg-slate-950 dark:border-slate-700 dark:text-white dark:placeholder-slate-500">
+                            <button onclick="createUserFolder('manual-qq')" class="bg-gray-200 dark:bg-slate-800 hover:bg-gray-300 dark:hover:bg-slate-700 px-3 rounded text-sm text-gray-700 dark:text-slate-300 whitespace-nowrap transition-colors">创建文件夹</button>
                         </div>
-                        <input type="text" id="manual-key" placeholder="解密 Key (可选，若提供则跳过计算)" class="border p-2 rounded w-full">
-                        <input type="text" id="manual-ntuid" placeholder="nt_uid (若无 Key 必须提供)" class="border p-2 rounded w-full">
+                        <input type="text" id="manual-key" placeholder="解密 Key (可选，若提供则跳过计算)" class="border p-2 rounded w-full dark:bg-slate-950 dark:border-slate-700 dark:text-white dark:placeholder-slate-500">
+                        <input type="text" id="manual-ntuid" placeholder="nt_uid (若无 Key 必须提供)" class="border p-2 rounded w-full dark:bg-slate-950 dark:border-slate-700 dark:text-white dark:placeholder-slate-500">
                     </div>
 
                     <div class="space-y-2 mt-4">
-                        <div class="flex items-center justify-between border p-3 rounded hover:bg-gray-50">
+                        <div class="flex items-center justify-between border p-3 rounded hover:bg-gray-50 dark:border-slate-800 dark:hover:bg-slate-800 transition-colors">
                             <div>
-                                <div class="font-bold text-sm">阶段 1: 原始文件</div>
-                                <div class="text-xs text-gray-500">已放置 group_info.db</div>
+                                <div class="font-bold text-sm dark:text-slate-200">阶段 1: 原始文件</div>
+                                <div class="text-xs text-gray-500 dark:text-slate-400">已放置 group_info.db</div>
                             </div>
-                            <button onclick="runManual('raw')" class="bg-slate-800 text-white px-3 py-1 rounded text-sm">执行全流程</button>
+                            <button onclick="runManual('raw')" class="bg-slate-800 dark:bg-slate-700 text-white px-3 py-1 rounded text-sm hover:bg-slate-900 dark:hover:bg-slate-600 transition-colors">执行全流程</button>
                         </div>
-                        <div class="flex items-center justify-between border p-3 rounded hover:bg-gray-50">
+                        <div class="flex items-center justify-between border p-3 rounded hover:bg-gray-50 dark:border-slate-800 dark:hover:bg-slate-800 transition-colors">
                             <div>
-                                <div class="font-bold text-sm">阶段 2: 已去头文件</div>
-                                <div class="text-xs text-gray-500">已放置 group_info.cleaned.db (需 Key)</div>
+                                <div class="font-bold text-sm dark:text-slate-200">阶段 2: 已去头文件</div>
+                                <div class="text-xs text-gray-500 dark:text-slate-400">已放置 group_info.cleaned.db (需 Key)</div>
                             </div>
-                            <button onclick="runManual('cleaned')" class="bg-slate-800 text-white px-3 py-1 rounded text-sm">解密并清洗</button>
+                            <button onclick="runManual('cleaned')" class="bg-slate-800 dark:bg-slate-700 text-white px-3 py-1 rounded text-sm hover:bg-slate-900 dark:hover:bg-slate-600 transition-colors">解密并清洗</button>
                         </div>
-                        <div class="flex items-center justify-between border p-3 rounded hover:bg-gray-50">
+                        <div class="flex items-center justify-between border p-3 rounded hover:bg-gray-50 dark:border-slate-800 dark:hover:bg-slate-800 transition-colors">
                             <div>
-                                <div class="font-bold text-sm">阶段 3: 已解密文件</div>
-                                <div class="text-xs text-gray-500">已放置 group_info.decrypted.db</div>
+                                <div class="font-bold text-sm dark:text-slate-200">阶段 3: 已解密文件</div>
+                                <div class="text-xs text-gray-500 dark:text-slate-400">已放置 group_info.decrypted.db</div>
                             </div>
-                            <button onclick="runManual('decrypted')" class="bg-slate-800 text-white px-3 py-1 rounded text-sm">仅清洗入库</button>
+                            <button onclick="runManual('decrypted')" class="bg-slate-800 dark:bg-slate-700 text-white px-3 py-1 rounded text-sm hover:bg-slate-900 dark:hover:bg-slate-600 transition-colors">仅清洗入库</button>
                         </div>
                     </div>
                 </div>
@@ -221,79 +256,79 @@
                 <!-- JSON 模式 -->
                 <div id="m-json" class="hidden manage-content space-y-4">
                     <div class="flex gap-2">
-                        <input type="text" id="json-qq" placeholder="设置 QQ 号" class="border p-2 rounded flex-1">
-                        <button onclick="createUserFolder('json-qq')" class="bg-gray-200 hover:bg-gray-300 px-3 rounded text-sm text-gray-700 whitespace-nowrap">创建文件夹</button>
+                        <input type="text" id="json-qq" placeholder="设置 QQ 号" class="border p-2 rounded flex-1 dark:bg-slate-950 dark:border-slate-700 dark:text-white dark:placeholder-slate-500">
+                        <button onclick="createUserFolder('json-qq')" class="bg-gray-200 dark:bg-slate-800 hover:bg-gray-300 dark:hover:bg-slate-700 px-3 rounded text-sm text-gray-700 dark:text-slate-300 whitespace-nowrap transition-colors">创建文件夹</button>
                     </div>
-                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:bg-gray-50 transition cursor-pointer relative">
+                    <div class="border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-xl p-8 text-center hover:bg-gray-50 dark:hover:bg-slate-800 transition cursor-pointer relative">
                         <input type="file" id="json-file" class="absolute inset-0 opacity-0 cursor-pointer" accept=".json">
-                        <div class="text-gray-500">点击上传 JSON 文件</div>
-                        <div id="json-filename" class="text-blue-600 text-sm mt-2"></div>
+                        <div class="text-gray-500 dark:text-slate-400">点击上传 JSON 文件</div>
+                        <div id="json-filename" class="text-blue-600 dark:text-blue-400 text-sm mt-2"></div>
                     </div>
-                    <button onclick="runJsonImport()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold shadow-lg shadow-blue-200">开始导入</button>
+                    <button onclick="runJsonImport()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 transition">开始导入</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 用户详情弹窗 (轻量级) [修复滚动问题] -->
+    <!-- 用户详情弹窗 -->
     <div id="detail-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4">
-        <!-- 遮罩层，点击关闭 -->
-        <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="this.parentElement.classList.add('hidden')"></div>
-        <!-- 弹窗主体，注意 relative 和 z-10 确保在遮罩之上 -->
-        <div class="relative bg-white w-full max-w-sm rounded-xl shadow-2xl flex flex-col max-h-[80vh] overflow-hidden z-10">
-            <div class="p-4 border-b bg-gray-50 flex justify-between shrink-0">
-                <h3 class="font-bold" id="dm-title">用户详情</h3>
-                <button onclick="document.getElementById('detail-modal').classList.add('hidden')">✕</button>
+        <div class="absolute inset-0 bg-black/20 dark:bg-black/50 backdrop-blur-sm" onclick="this.parentElement.classList.add('hidden')"></div>
+        <div class="relative bg-white dark:bg-slate-900 w-full max-w-sm rounded-xl shadow-2xl flex flex-col max-h-[80vh] overflow-hidden z-10 transition-colors duration-200">
+            <div class="p-4 border-b bg-gray-50 dark:bg-slate-950 dark:border-slate-800 flex justify-between shrink-0">
+                <h3 class="font-bold dark:text-white" id="dm-title">用户详情</h3>
+                <button onclick="document.getElementById('detail-modal').classList.add('hidden')" class="text-gray-500 dark:text-slate-400">✕</button>
             </div>
-            <!-- 内容区域，overflow-y-auto 确保可滚动 -->
-            <div id="dm-content" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
+            <div id="dm-content" class="flex-1 overflow-y-auto p-2 space-y-1 bg-white dark:bg-slate-900"></div>
         </div>
     </div>
 
-    <!-- 错误提示弹窗 (Error Modal) -->
+    <!-- 错误提示弹窗 -->
     <div id="error-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="this.parentElement.classList.add('hidden')"></div>
-        <div class="relative bg-white w-full max-w-md rounded-xl shadow-2xl z-10 overflow-hidden flex flex-col">
-            <div class="p-4 border-b bg-red-50 flex items-center gap-2">
-                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                <h3 class="font-bold text-red-800">操作失败</h3>
+        <div class="absolute inset-0 bg-black/30 dark:bg-black/60 backdrop-blur-sm" onclick="this.parentElement.classList.add('hidden')"></div>
+        <div class="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-xl shadow-2xl z-10 overflow-hidden flex flex-col transition-colors duration-200">
+            <div class="p-4 border-b bg-red-50 dark:bg-red-900/20 dark:border-red-900/30 flex items-center gap-2">
+                <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <h3 class="font-bold text-red-800 dark:text-red-300">操作失败</h3>
             </div>
-            <div id="error-content" class="p-6 text-sm text-gray-700 whitespace-pre-wrap break-words leading-relaxed overflow-y-auto max-h-[60vh]"></div>
-            <div class="p-4 border-t bg-gray-50 flex justify-end">
-                <button onclick="document.getElementById('error-modal').classList.add('hidden')" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900">关闭</button>
+            <div id="error-content" class="p-6 text-sm text-gray-700 dark:text-slate-300 whitespace-pre-wrap break-words leading-relaxed overflow-y-auto max-h-[60vh]"></div>
+            <div class="p-4 border-t bg-gray-50 dark:bg-slate-950 dark:border-slate-800 flex justify-end">
+                <button onclick="document.getElementById('error-modal').classList.add('hidden')" class="bg-gray-800 dark:bg-slate-700 text-white px-4 py-2 rounded hover:bg-gray-900 dark:hover:bg-slate-600 transition">关闭</button>
             </div>
         </div>
     </div>
 
     <script>
-        let currentQQ = localStorage.getItem('lastQQ') || '';
-        let selectedGroups = []; // Tab 3
+        // 主题切换逻辑
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
 
-        // 初始化
+        let currentQQ = localStorage.getItem('lastQQ') || '';
+        let selectedGroups = [];
+
         document.addEventListener('DOMContentLoaded', () => {
             refreshUserList();
             if(currentQQ) selectUser(currentQQ);
             scanTermux();
         });
 
-        // 错误弹窗显示函数 (自动转换 URL 为链接)
         function showError(msg) {
             const modal = document.getElementById('error-modal');
             const content = document.getElementById('error-content');
-            
-            // 简单的正则替换 URL
             const urlRegex = /(https?:\/\/[^\s]+)/g;
             const html = msg.replace(urlRegex, (url) => {
-                // 移除可能的末尾标点
                 const cleanUrl = url.replace(/[.,;]$/, '');
-                return `<a href="${cleanUrl}" target="_blank" class="text-blue-600 underline hover:text-blue-800 break-all">${cleanUrl}</a>`;
+                return `<a href="${cleanUrl}" target="_blank" class="text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300 break-all">${cleanUrl}</a>`;
             });
-            
             content.innerHTML = html;
             modal.classList.remove('hidden');
         }
-
-        // ================= 用户管理逻辑 =================
 
         function openManageModal() {
             document.getElementById('manage-modal').classList.remove('hidden');
@@ -304,11 +339,11 @@
             document.querySelectorAll('.manage-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(target).classList.remove('hidden');
             document.querySelectorAll('.manage-tab-btn').forEach(el => {
-                el.classList.remove('border-blue-600', 'text-blue-600');
+                el.classList.remove('border-blue-600', 'text-blue-600', 'dark:text-blue-400');
                 el.classList.add('border-transparent');
             });
             document.querySelector(`button[data-target="${target}"]`).classList.remove('border-transparent');
-            document.querySelector(`button[data-target="${target}"]`).classList.add('border-blue-600', 'text-blue-600');
+            document.querySelector(`button[data-target="${target}"]`).classList.add('border-blue-600', 'text-blue-600', 'dark:text-blue-400');
         }
 
         async function refreshUserList() {
@@ -316,9 +351,9 @@
             const users = await res.json();
             const container = document.getElementById('user-list-container');
             container.innerHTML = users.map(u => `
-                <div class="flex justify-between items-center px-2 py-1.5 hover:bg-gray-100 rounded cursor-pointer group">
-                    <span onclick="selectUser('${u}')" class="flex-1 text-sm font-medium ${u === currentQQ ? 'text-blue-600' : 'text-gray-700'}">${u}</span>
-                    <button onclick="deleteUser('${u}')" class="hidden group-hover:block text-xs text-red-400 hover:text-red-600">删除</button>
+                <div class="flex justify-between items-center px-2 py-1.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded cursor-pointer group transition-colors">
+                    <span onclick="selectUser('${u}')" class="flex-1 text-sm font-medium ${u === currentQQ ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-slate-300'}">${u}</span>
+                    <button onclick="deleteUser('${u}')" class="hidden group-hover:block text-xs text-red-400 hover:text-red-600 transition-colors">删除</button>
                 </div>
             `).join('');
         }
@@ -331,7 +366,6 @@
                 const data = await res.json();
                 if(res.ok) alert(data.detail);
                 else alert('错误: ' + data.detail);
-                // 仅创建文件夹不会出现在用户列表里，因为没有 group_data.db，这是符合预期的
             } catch(e) { alert('请求失败'); }
         }
 
@@ -343,7 +377,6 @@
                     const err = await res.json();
                     throw new Error(err.detail);
                 }
-                
                 if (currentQQ === qq) {
                     currentQQ = '';
                     localStorage.removeItem('lastQQ');
@@ -351,9 +384,7 @@
                 } else {
                     refreshUserList();
                 }
-            } catch(e) {
-                alert("删除失败: " + e.message);
-            }
+            } catch(e) { alert("删除失败: " + e.message); }
         }
 
         function selectUser(qq) {
@@ -364,32 +395,41 @@
             document.getElementById('empty-state').classList.add('hidden');
             document.getElementById('analysis-view').classList.remove('hidden');
             
-            // 重置状态并加载第一个 Tab
+            // 切换用户时清空之前的数据展示，优化体验
             document.getElementById('tab1-content').innerHTML = '';
-            loadFrequentUsers();
+            document.getElementById('search-res-2').innerHTML = '';
+            document.getElementById('tab2-content').innerHTML = '';
+            document.getElementById('search-res-3').innerHTML = '';
+            document.getElementById('sel-list').innerHTML = '';
+            document.getElementById('tab3-content').innerHTML = '';
+            selectedGroups = [];
+            document.getElementById('sel-count').innerText = 0;
+            document.getElementById('tab3-res-count').innerText = "0 人";
+            
+            // 默认显示第一个 Tab
+            switchTab('tab1');
         }
 
-        // --- Termux 逻辑 ---
         async function scanTermux() {
             const list = document.getElementById('termux-uid-list');
             try {
                 const res = await fetch('/api/system/uids');
                 const data = await res.json();
                 if (!data.available) {
-                    list.innerHTML = `<div class="text-red-500 text-sm text-center py-4">${data.error || '无法获取 UID，非 Termux 环境或无权限'}</div>`;
+                    list.innerHTML = `<div class="text-red-500 dark:text-red-400 text-sm text-center py-4">${data.error || '无法获取 UID，非 Termux 环境或无权限'}</div>`;
                     return;
                 }
                 list.innerHTML = data.uids.map(item => `
-                    <div class="flex items-center justify-between border p-3 rounded-lg bg-gray-50">
+                    <div class="flex items-center justify-between border p-3 rounded-lg bg-gray-50 dark:bg-slate-800 dark:border-slate-700">
                         <div>
-                            <div class="font-bold text-gray-800">${item.qq}</div>
-                            <div class="text-xs text-gray-400 font-mono truncate max-w-[150px]">${item.nt_uid}</div>
+                            <div class="font-bold text-gray-800 dark:text-slate-200">${item.qq}</div>
+                            <div class="text-xs text-gray-400 dark:text-slate-500 font-mono truncate max-w-[150px]">${item.nt_uid}</div>
                         </div>
-                        <button onclick="runTermuxProcess('${item.qq}', '${item.nt_uid}')" class="bg-blue-600 text-white text-sm px-3 py-1.5 rounded shadow">一键提取</button>
+                        <button onclick="runTermuxProcess('${item.qq}', '${item.nt_uid}')" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-3 py-1.5 rounded shadow transition-colors">一键提取</button>
                     </div>
                 `).join('');
             } catch (e) {
-                list.innerHTML = `<div class="text-center text-sm text-gray-400">网络错误</div>`;
+                list.innerHTML = `<div class="text-center text-sm text-gray-400 dark:text-slate-500">网络错误</div>`;
             }
         }
 
@@ -418,11 +458,9 @@
             btn.disabled = false;
         }
 
-        // --- Manual 逻辑 ---
         async function runManual(step) {
             const qq = document.getElementById('manual-qq').value;
             if(!qq) return alert('请输入 QQ 号');
-            
             const payload = {
                 qq_id: qq,
                 step: step,
@@ -430,7 +468,6 @@
                 nt_uid: document.getElementById('manual-ntuid').value || undefined,
                 key: document.getElementById('manual-key').value || undefined
             };
-
             try {
                 const res = await fetch('/api/users/manual_process', {
                     method: 'POST',
@@ -448,25 +485,20 @@
             } catch(e) { alert('错误: ' + e); }
         }
 
-        // --- JSON 逻辑 ---
         async function runJsonImport() {
             const qq = document.getElementById('json-qq').value;
             const fileInput = document.getElementById('json-file');
             if(!qq || !fileInput.files[0]) return alert('请填写 QQ 并选择文件');
-
             const formData = new FormData();
             formData.append('qq_id', qq);
             formData.append('file', fileInput.files[0]);
-
             try {
                 const res = await fetch('/api/users/json_import', { method: 'POST', body: formData });
                 if(res.ok) {
                     alert('导入成功');
                     refreshUserList();
                     selectUser(qq);
-                } else {
-                    alert('导入失败');
-                }
+                } else { alert('导入失败'); }
             } catch(e) { alert('错误'); }
         }
 
@@ -474,16 +506,13 @@
             document.getElementById('json-filename').innerText = this.files[0].name;
         };
 
-        // ================= 数据分析逻辑 =================
-
         function switchTab(id) {
             ['tab1', 'tab2', 'tab3'].forEach(t => {
                 document.getElementById(t).classList.add('hidden');
-                document.getElementById('nav-'+t).classList.remove('bg-blue-50', 'text-blue-600');
+                document.getElementById('nav-'+t).classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-slate-800', 'dark:text-blue-400');
             });
             document.getElementById(id).classList.remove('hidden');
-            document.getElementById('nav-'+id).classList.add('bg-blue-50', 'text-blue-600');
-            
+            document.getElementById('nav-'+id).classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-slate-800', 'dark:text-blue-400');
             if(id === 'tab1' && !document.getElementById('tab1-content').hasChildNodes()) loadFrequentUsers();
         }
 
@@ -491,31 +520,28 @@
             if(!currentQQ) return;
             const res = await fetch(`/api/analysis/${currentQQ}/frequent_users?min_groups=2`);
             const data = await res.json();
-            
-            // 分组逻辑
             const groups = {};
             data.forEach(u => {
                 if(!groups[u.group_count]) groups[u.group_count] = [];
                 groups[u.group_count].push(u);
             });
-
             const html = Object.keys(groups).sort((a,b)=>b-a).map(cnt => `
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="px-4 py-3 bg-gray-50 flex justify-between items-center cursor-pointer" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                        <span class="font-bold text-sm text-gray-700">加群数: ${cnt} <span class="text-gray-400 font-normal ml-2">(${groups[cnt].length}人)</span></span>
-                        <span class="text-gray-400 text-xs">▼</span>
+                <div class="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-slate-800 overflow-hidden transition-colors duration-200">
+                    <div class="px-4 py-3 bg-gray-50 dark:bg-slate-950 flex justify-between items-center cursor-pointer select-none" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                        <span class="font-bold text-sm text-gray-700 dark:text-slate-300">加群数: ${cnt} <span class="text-gray-400 dark:text-slate-500 font-normal ml-2">(${groups[cnt].length}人)</span></span>
+                        <span class="text-gray-400 dark:text-slate-500 text-xs">▼</span>
                     </div>
-                    <div class="hidden p-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                    <div class="hidden p-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 border-t border-gray-100 dark:border-slate-800">
                         ${groups[cnt].map(u => `
-                            <div onclick="showDetail('${u.user_id}', '${u.user_name}')" class="p-2 hover:bg-blue-50 rounded border border-transparent hover:border-blue-100 cursor-pointer transition">
-                                <div class="font-medium text-sm truncate text-gray-800">${u.user_name||'未知'}</div>
-                                <div class="text-xs text-gray-400 truncate">${u.user_id}</div>
+                            <div onclick="showDetail('${u.user_id}', '${u.user_name}')" class="p-2 hover:bg-blue-50 dark:hover:bg-slate-800 rounded border border-transparent hover:border-blue-100 dark:hover:border-slate-700 cursor-pointer transition-colors group">
+                                <div class="font-medium text-sm truncate text-gray-800 dark:text-slate-200 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">${u.user_name||'未知'}</div>
+                                <div class="text-xs text-gray-400 dark:text-slate-500 truncate">${u.user_id}</div>
                             </div>
                         `).join('')}
                     </div>
                 </div>
             `).join('');
-            document.getElementById('tab1-content').innerHTML = html || '<div class="text-center py-10 text-gray-400">无数据</div>';
+            document.getElementById('tab1-content').innerHTML = html || '<div class="text-center py-10 text-gray-400 dark:text-slate-500">无数据</div>';
         }
 
         let searchTimer;
@@ -530,46 +556,44 @@
             const data = await res.json();
             const html = data.map(g => `
                 <div onclick="${targetId === 'search-res-2' ? `loadGroupOverlap('${g.group_id}', '${g.group_name}')` : `addIntersect('${g.group_id}', '${g.group_name}')`}" 
-                     class="p-2 hover:bg-gray-100 rounded cursor-pointer text-sm truncate border-b border-gray-50">
+                     class="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded cursor-pointer text-sm truncate border-b border-gray-50 dark:border-slate-800 text-gray-700 dark:text-slate-300 transition-colors">
                     ${g.group_name}
                 </div>
             `).join('');
             document.getElementById(targetId).innerHTML = html;
         }
 
-        // Tab 2 逻辑
         async function loadGroupOverlap(gid, gname) {
-            document.getElementById('tab2-header').innerHTML = `分析: <span class="text-blue-600">${gname}</span>`;
+            document.getElementById('tab2-header').innerHTML = `分析: <span class="text-blue-600 dark:text-blue-400">${gname}</span>`;
             const res = await fetch(`/api/analysis/${currentQQ}/group_overlap?group_id=${gid}`);
             const data = await res.json();
-            
-            // 复用分组渲染逻辑，这里简化展示
             document.getElementById('tab2-content').innerHTML = data.map(u => `
-                <div onclick="showDetail('${u.user_id}', '${u.user_name}')" class="flex justify-between items-center p-2 hover:bg-gray-50 border-b border-gray-100">
+                <div onclick="showDetail('${u.user_id}', '${u.user_name}')" class="flex justify-between items-center p-2 hover:bg-gray-50 dark:hover:bg-slate-800 border-b border-gray-100 dark:border-slate-800 transition-colors cursor-pointer group">
                     <div>
-                        <div class="font-bold text-sm text-gray-700">${u.user_name}</div>
-                        <div class="text-xs text-gray-400">${u.user_id}</div>
+                        <div class="font-bold text-sm text-gray-700 dark:text-slate-200 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">${u.user_name}</div>
+                        <div class="text-xs text-gray-400 dark:text-slate-500">${u.user_id}</div>
                     </div>
-                    <div class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-bold">群数: ${u.group_count}</div>
+                    <div class="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs font-bold">群数: ${u.group_count}</div>
                 </div>
             `).join('');
         }
 
-        // Tab 3 逻辑
         function addIntersect(gid, gname) {
             if(selectedGroups.find(g => g.id === gid)) return;
             selectedGroups.push({id: gid, name: gname});
             renderSel();
         }
+
         function renderSel() {
             document.getElementById('sel-count').innerText = selectedGroups.length;
             document.getElementById('sel-list').innerHTML = selectedGroups.map(g => `
-                <div class="flex justify-between items-center bg-blue-50 p-2 rounded text-sm mb-1">
-                    <span class="truncate text-blue-800">${g.name}</span>
-                    <button onclick="selectedGroups = selectedGroups.filter(x=>x.id!=='${g.id}');renderSel();" class="text-red-400">×</button>
+                <div class="flex justify-between items-center bg-blue-50 dark:bg-slate-800 p-2 rounded text-sm mb-1 transition-colors">
+                    <span class="truncate text-blue-800 dark:text-blue-300">${g.name}</span>
+                    <button onclick="selectedGroups = selectedGroups.filter(x=>x.id!=='${g.id}');renderSel();" class="text-red-400 hover:text-red-600 dark:hover:text-red-300">×</button>
                 </div>
             `).join('');
         }
+
         async function runIntersection() {
             if(selectedGroups.length < 2) return alert('至少选2个群');
             const res = await fetch(`/api/analysis/${currentQQ}/intersection`, {
@@ -580,31 +604,28 @@
             const data = await res.json();
             document.getElementById('tab3-res-count').innerText = data.length + ' 人';
             document.getElementById('tab3-content').innerHTML = data.map(u => `
-                <div class="bg-gray-50 p-2 rounded border border-gray-200">
-                    <div class="font-bold text-sm truncate">${u.user_name}</div>
-                    <div class="text-xs text-gray-400">${u.user_id}</div>
+                <div class="bg-gray-50 dark:bg-slate-800 p-2 rounded border border-gray-200 dark:border-slate-700 transition-colors">
+                    <div class="font-bold text-sm truncate dark:text-slate-200">${u.user_name}</div>
+                    <div class="text-xs text-gray-400 dark:text-slate-500">${u.user_id}</div>
                 </div>
             `).join('');
         }
 
-        // 详情弹窗
         async function showDetail(uid, uname) {
             const modal = document.getElementById('detail-modal');
             const content = document.getElementById('dm-content');
             modal.classList.remove('hidden');
             document.getElementById('dm-title').innerText = uname || uid;
-            content.innerHTML = '<div class="text-gray-400 text-sm text-center">加载中...</div>';
-            
+            content.innerHTML = '<div class="text-gray-400 dark:text-slate-500 text-sm text-center py-4">加载中...</div>';
             const res = await fetch(`/api/analysis/${currentQQ}/user_groups/${uid}`);
             const data = await res.json();
             content.innerHTML = data.map(g => `
-                <div class="flex justify-between items-center p-2 bg-gray-50 rounded border border-gray-100 text-sm">
-                    <span class="truncate max-w-[60%] text-gray-700">${g.group_name}</span>
-                    <span class="text-xs bg-white border px-1 rounded text-gray-500 max-w-[35%] truncate">${g.nickname || '-'}</span>
+                <div class="flex justify-between items-center p-2 bg-gray-50 dark:bg-slate-800 rounded border border-gray-100 dark:border-slate-700 text-sm transition-colors">
+                    <span class="truncate max-w-[60%] text-gray-700 dark:text-slate-300">${g.group_name}</span>
+                    <span class="text-xs bg-white dark:bg-slate-900 border dark:border-slate-600 px-1 rounded text-gray-500 dark:text-slate-400 max-w-[35%] truncate">${g.nickname || '-'}</span>
                 </div>
             `).join('');
         }
-
     </script>
 </body>
 </html>
