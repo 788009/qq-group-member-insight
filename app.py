@@ -8,6 +8,7 @@ import sqlite3 # 标准库，用于普通非加密操作
 import subprocess
 import sys
 import gc
+import argparse # [新增] 导入参数解析库
 from typing import List, Optional, Dict
 from fastapi import FastAPI, HTTPException, Body, UploadFile, File
 from fastapi.responses import FileResponse, JSONResponse
@@ -610,5 +611,9 @@ def get_user_group_details(qq_id: str, target_user_id: str):
         session.close()
 
 if __name__ == "__main__":
-    print("启动 WebUI: http://127.0.0.1:8003")
-    uvicorn.run(app, host="0.0.0.0", port=8003)
+    parser = argparse.ArgumentParser(description="QQ Group Analyzer WebUI")
+    parser.add_argument("--port", type=int, default=8003, help="WebUI 运行端口 (默认: 8003)")
+    args = parser.parse_args()
+
+    print(f"启动 WebUI: http://127.0.0.1:{args.port}")
+    uvicorn.run(app, host="0.0.0.0", port=args.port)
