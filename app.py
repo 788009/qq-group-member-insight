@@ -259,9 +259,15 @@ class Pipeline:
             # --- 迁移群组 ---
             src_cursor.execute('SELECT * FROM group_list')
             group_rows = src_cursor.fetchall()
+            
+            # [新增] 记录有效的群组 ID，用于后续过滤成员
+            valid_group_ids = set()
+            
             for row in group_rows:
                 if len(row) > 5:
-                    session.merge(Group(group_id=str(row[0]), group_name=str(row[5])))
+                    gid = str(row[0])
+                    session.merge(Group(group_id=gid, group_name=str(row[5])))
+                    valid_group_ids.add(gid)
             
             # --- 迁移成员 ---
             src_cursor.execute("SELECT * FROM group_member3")
@@ -279,7 +285,11 @@ class Pipeline:
                 g_id = str(row[2])
                 u_id = str(row[5])
                 
-                # [新增功能] 数据清洗：排除用户自己
+                # [新增] 过滤掉不在 group_list 中的群成员数据 (幽灵群聊)
+                if g_id not in valid_group_ids:
+                    continue
+
+                # [新增] 数据清洗：排除用户自己
                 if u_id == target_qq_id:
                     continue
 
