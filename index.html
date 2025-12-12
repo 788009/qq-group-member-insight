@@ -59,7 +59,7 @@
     <header class="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 h-14 flex items-center justify-between px-4 shrink-0 z-20 shadow-sm transition-colors duration-200">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/30">Q</div>
-            <h1 class="font-bold text-lg tracking-tight dark:text-white">GM Insight</h1>
+            <h1 class="font-bold text-lg tracking-tight dark:text-white">GroupInsight</h1>
         </div>
         
         <div class="flex items-center gap-3">
@@ -111,7 +111,7 @@
             <nav class="bg-white dark:bg-slate-900 border-t md:border-t-0 md:border-r border-gray-200 dark:border-slate-800 md:w-64 shrink-0 flex md:flex-col justify-around md:justify-start p-2 md:p-4 z-30 order-2 md:order-1 mobile-sticky-nav shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none transition-colors duration-200">
                 <button onclick="switchTab('tab1')" id="nav-tab1" class="flex flex-col md:flex-row items-center md:gap-3 p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition active-nav">
                     <span class="text-xl">🏆</span>
-                    <span class="text-xs md:text-sm font-medium">数量排行</span>
+                    <span class="text-xs md:text-sm font-medium">活跃排行</span>
                 </button>
                 <button onclick="switchTab('tab2')" id="nav-tab2" class="flex flex-col md:flex-row items-center md:gap-3 p-2 rounded-lg text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition">
                     <span class="text-xl">🕸️</span>
@@ -135,10 +135,10 @@
                     <div id="tab1-content" class="space-y-3 pb-4 md:pb-20"></div>
                 </div>
 
-                <!-- Tab 2: 渗透查询 -->
+                <!-- Tab 2: 渗透分析 -->
                 <div id="tab2" class="hidden w-full min-h-full md:h-full flex flex-col p-4 md:p-8 md:overflow-hidden">
                     <div class="mb-4">
-                        <h2 class="text-xl font-bold dark:text-white">群成员渗透查询</h2>
+                        <h2 class="text-xl font-bold dark:text-white">群成员渗透分析</h2>
                         <p class="text-sm text-gray-500 dark:text-slate-400">查询指定群聊成员还在哪些群聊</p>
                     </div>
                     <div class="flex flex-col md:flex-row gap-4 md:h-full pb-4 md:pb-20">
@@ -167,7 +167,7 @@
                                 <div id="search-res-3" class="h-32 md:h-48 overflow-y-auto border border-gray-100 dark:border-slate-800 rounded bg-gray-50 dark:bg-slate-950 mb-2 p-1"></div>
                                 <div class="flex justify-between items-center text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
                                     <span>已选: <span id="sel-count">0</span></span>
-                                    <button onclick="runIntersection()" class="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition">查询</button>
+                                    <button onclick="runIntersection()" class="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition">分析</button>
                                 </div>
                                 <div id="sel-list" class="flex-1 overflow-y-auto space-y-1 min-h-[100px] max-h-[200px] md:max-h-none"></div>
                             </div>
@@ -220,8 +220,7 @@
                 <div id="m-manual" class="hidden manage-content space-y-4">
                     <div class="text-sm text-gray-600 dark:text-slate-400 space-y-2">
                         <p>请将相关文件手动放入 <code>./data/{QQ号}/</code> 目录。</p>
-                        <p><a href="https://docs.aaqwq.top/decrypt/description.html" target="_blank" class="text-blue-600 dark:text-blue-400 underline">查看解密教程 & Key 获取</a></p>
-                        <p>注意：一个平台获得的 nt_uid 和 Key 只能解密相同平台的数据库，而无法解密其他平台相同账号的数据库。</p>
+                        <p><a href="https://docs.aaqwq.top/decrypt/description.html" target="_blank" class="text-blue-600 dark:text-blue-400 underline">查看解密教程 & key获取</a></p>
                     </div>
                     <div class="grid gap-3">
                         <div class="flex gap-2">
@@ -259,6 +258,21 @@
 
                 <!-- JSON 模式 -->
                 <div id="m-json" class="hidden manage-content space-y-4">
+                    <div class="text-sm text-gray-600 dark:text-slate-400 space-y-2">
+                        <p>请上传符合以下格式的 JSON 文件：</p>
+                        <pre class="bg-gray-100 dark:bg-slate-800 p-3 rounded text-xs font-mono overflow-x-auto text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700">
+{
+  "<span class="text-blue-600 dark:text-blue-400">{group_id(群号)}</span>": {
+    "group_name": "{group_name(群名称)}",
+    "members": {
+      "<span class="text-blue-600 dark:text-blue-400">{user_id(QQ号)}</span>": {
+        "user_group_name": "{user_group_name(用户群昵称)}",
+        "user_name": "{user_name(用户昵称)}"
+      }
+    }
+  }
+}</pre>
+                    </div>
                     <div class="flex gap-2">
                         <input type="text" id="json-qq" placeholder="设置 QQ 号" class="border p-2 rounded flex-1 dark:bg-slate-950 dark:border-slate-700 dark:text-white dark:placeholder-slate-500">
                         <button onclick="createUserFolder('json-qq')" class="bg-gray-200 dark:bg-slate-800 hover:bg-gray-300 dark:hover:bg-slate-700 px-3 rounded text-sm text-gray-700 dark:text-slate-300 whitespace-nowrap transition-colors">创建文件夹</button>
@@ -542,7 +556,7 @@
             const html = Object.keys(groups).sort((a,b)=>b-a).map(cnt => `
                 <div class="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-slate-800 overflow-hidden transition-colors duration-200">
                     <div class="px-4 py-3 bg-gray-50 dark:bg-slate-950 flex justify-between items-center cursor-pointer select-none" onclick="this.nextElementSibling.classList.toggle('hidden')">
-                        <span class="font-bold text-sm text-gray-700 dark:text-slate-300">共同群聊数: ${cnt} <span class="text-gray-400 dark:text-slate-500 font-normal ml-2">(${groups[cnt].length}人)</span></span>
+                        <span class="font-bold text-sm text-gray-700 dark:text-slate-300">加群数: ${cnt} <span class="text-gray-400 dark:text-slate-500 font-normal ml-2">(${groups[cnt].length}人)</span></span>
                         <span class="text-gray-400 dark:text-slate-500 text-xs">▼</span>
                     </div>
                     <div class="hidden p-2 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 border-t border-gray-100 dark:border-slate-800">
@@ -578,7 +592,7 @@
         }
 
         async function loadGroupOverlap(gid, gname) {
-            document.getElementById('tab2-header').innerHTML = `查询: <span class="text-blue-600 dark:text-blue-400">${gname}</span>`;
+            document.getElementById('tab2-header').innerHTML = `分析: <span class="text-blue-600 dark:text-blue-400">${gname}</span>`;
             const res = await fetch(`/api/analysis/${currentQQ}/group_overlap?group_id=${gid}`);
             const data = await res.json();
             document.getElementById('tab2-content').innerHTML = data.map(u => `
