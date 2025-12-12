@@ -12,6 +12,11 @@
         .mobile-hide { display: none; }
         @media (min-width: 768px) { .mobile-hide { display: block; } }
         .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; }
+        /* 移动端优化：去除某些内部滚动条，统一使用页面滚动 */
+        @media (max-width: 768px) {
+            .mobile-auto-height { height: auto !important; overflow: visible !important; }
+            .mobile-sticky-nav { position: sticky; bottom: 0; z-index: 40; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); }
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-slate-800 h-screen flex flex-col overflow-hidden font-sans">
@@ -48,7 +53,8 @@
     </header>
 
     <!-- 主体内容 -->
-    <main class="flex-1 overflow-hidden relative" id="main-area">
+    <!-- 移动端：overflow-y-auto 允许页面滚动；桌面端：overflow-hidden 固定高度，内部滚动 -->
+    <main class="flex-1 relative overflow-y-auto md:overflow-hidden scroll-smooth" id="main-area">
         <!-- 如果没有选择用户，显示空状态 -->
         <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 bg-gray-50">
             <div class="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center mb-4 text-4xl">📂</div>
@@ -58,9 +64,12 @@
         </div>
 
         <!-- 分析界面 (默认隐藏) -->
-        <div id="analysis-view" class="hidden h-full flex flex-col md:flex-row">
-            <!-- 侧边栏/底部栏 (移动端在底部) -->
-            <nav class="bg-white border-t md:border-t-0 md:border-r border-gray-200 md:w-64 shrink-0 flex md:flex-col justify-around md:justify-start p-2 md:p-4 z-10 order-2 md:order-1">
+        <!-- 移动端：min-h-full 让内容撑开；桌面端：h-full 固定高度 -->
+        <div id="analysis-view" class="hidden min-h-full md:h-full flex flex-col md:flex-row">
+            
+            <!-- 侧边栏/底部栏 -->
+            <!-- 移动端：sticky bottom-0 固定在底部，方便切换 -->
+            <nav class="bg-white border-t md:border-t-0 md:border-r border-gray-200 md:w-64 shrink-0 flex md:flex-col justify-around md:justify-start p-2 md:p-4 z-30 order-2 md:order-1 mobile-sticky-nav shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:shadow-none">
                 <button onclick="switchTab('tab1')" id="nav-tab1" class="flex flex-col md:flex-row items-center md:gap-3 p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition active-nav">
                     <span class="text-xl">🏆</span>
                     <span class="text-xs md:text-sm font-medium">活跃排行</span>
@@ -76,35 +85,44 @@
             </nav>
 
             <!-- 内容显示区 -->
-            <div class="flex-1 bg-gray-50 relative overflow-hidden order-1 md:order-2">
+            <div class="flex-1 bg-gray-50 relative order-1 md:order-2 md:overflow-hidden">
+                
                 <!-- Tab 1: 活跃用户 -->
-                <div id="tab1" class="w-full h-full flex flex-col p-4 md:p-8 overflow-y-auto">
+                <!-- 移动端：h-auto 自然高度；桌面端：h-full 内部滚动 -->
+                <div id="tab1" class="w-full min-h-full md:h-full flex flex-col p-4 md:p-8 md:overflow-y-auto">
                     <div class="mb-4">
                         <h2 class="text-xl font-bold">活跃用户排行</h2>
                         <p class="text-sm text-gray-500">加群数量 >= 2 的用户</p>
                     </div>
-                    <div id="tab1-content" class="space-y-3 pb-20"></div>
+                    <div id="tab1-content" class="space-y-3 pb-4 md:pb-20"></div>
                 </div>
 
                 <!-- Tab 2: 渗透分析 -->
-                <div id="tab2" class="hidden w-full h-full flex flex-col p-4 md:p-8 overflow-hidden">
+                <div id="tab2" class="hidden w-full min-h-full md:h-full flex flex-col p-4 md:p-8 md:overflow-hidden">
                     <h2 class="text-xl font-bold mb-4">群成员渗透分析</h2>
-                    <div class="flex flex-col md:flex-row gap-4 h-full pb-20">
-                        <div class="md:w-1/3 flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden shrink-0 h-64 md:h-auto">
-                            <input type="text" placeholder="搜索群聊..." oninput="debounceSearch(this.value, 'search-res-2')" class="p-3 border-b border-gray-100 outline-none text-sm">
+                    <!-- 移动端：flex-col，去除固定高度限制；桌面端：flex-row h-full -->
+                    <div class="flex flex-col md:flex-row gap-4 md:h-full pb-4 md:pb-20">
+                        <!-- 搜索框区域 -->
+                        <div class="md:w-1/3 flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden shrink-0 h-80 md:h-auto">
+                            <input type="text" placeholder="搜索群聊..." oninput="debounceSearch(this.value, 'search-res-2')" class="p-3 border-b border-gray-100 outline-none text-sm shrink-0">
                             <div id="search-res-2" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
                         </div>
-                        <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-                            <div class="p-3 border-b border-gray-100 bg-gray-50 font-medium text-sm" id="tab2-header">请选择群聊</div>
-                            <div id="tab2-content" class="flex-1 overflow-y-auto p-3 space-y-2"></div>
+                        
+                        <!-- 结果区域 -->
+                        <!-- 移动端：h-auto (由内容撑开)，overflow-visible；桌面端：flex-col overflow-hidden -->
+                        <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-auto md:overflow-hidden">
+                            <div class="p-3 border-b border-gray-100 bg-gray-50 font-medium text-sm shrink-0 sticky top-0 z-10" id="tab2-header">请选择群聊</div>
+                            <!-- 移动端：h-auto；桌面端：flex-1 overflow-y-auto -->
+                            <div id="tab2-content" class="p-3 space-y-2 h-auto md:flex-1 md:overflow-y-auto"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Tab 3: 交集 -->
-                <div id="tab3" class="hidden w-full h-full flex flex-col p-4 md:p-8 overflow-hidden">
+                <div id="tab3" class="hidden w-full min-h-full md:h-full flex flex-col p-4 md:p-8 md:overflow-hidden">
                     <h2 class="text-xl font-bold mb-4">多群交集查询</h2>
-                    <div class="flex flex-col md:flex-row gap-4 h-full pb-20">
+                    <div class="flex flex-col md:flex-row gap-4 md:h-full pb-4 md:pb-20">
+                        <!-- 输入与选择区域 -->
                         <div class="md:w-1/3 flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden shrink-0 h-auto md:h-full">
                             <div class="p-3">
                                 <input type="text" placeholder="添加群聊..." oninput="debounceSearch(this.value, 'search-res-3')" class="w-full p-2 border border-gray-200 rounded text-sm mb-2 outline-none focus:border-blue-500">
@@ -113,15 +131,17 @@
                                     <span>已选: <span id="sel-count">0</span></span>
                                     <button onclick="runIntersection()" class="text-xs bg-blue-600 text-white px-3 py-1 rounded">分析</button>
                                 </div>
-                                <div id="sel-list" class="flex-1 overflow-y-auto space-y-1 min-h-[100px]"></div>
+                                <div id="sel-list" class="flex-1 overflow-y-auto space-y-1 min-h-[100px] max-h-[200px] md:max-h-none"></div>
                             </div>
                         </div>
-                        <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-                            <div class="p-3 border-b border-gray-100 bg-gray-50 font-medium text-sm flex justify-between">
+                        
+                        <!-- 结果区域 -->
+                        <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-auto md:overflow-hidden">
+                            <div class="p-3 border-b border-gray-100 bg-gray-50 font-medium text-sm flex justify-between shrink-0 sticky top-0 z-10">
                                 <span>结果列表</span>
                                 <span id="tab3-res-count" class="text-gray-500">0 人</span>
                             </div>
-                            <div id="tab3-content" class="flex-1 overflow-y-auto p-3 grid grid-cols-2 lg:grid-cols-4 gap-3 content-start"></div>
+                            <div id="tab3-content" class="p-3 grid grid-cols-2 lg:grid-cols-4 gap-3 content-start h-auto md:flex-1 md:overflow-y-auto"></div>
                         </div>
                     </div>
                 </div>
