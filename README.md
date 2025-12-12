@@ -113,7 +113,7 @@ python3 app.py --port <port>
 
 目前支持两类导入数据的方案：
 
-1. 通过数据库及必要信息
+- 通过数据库及必要信息
 
    <details>
     <summary>点击查看示例图片</summary>
@@ -122,7 +122,7 @@ python3 app.py --port <port>
 
   </details>
 
-2. 通过 JSON
+- 通过 JSON
 
    <details>
     <summary>点击查看示例图片</summary>
