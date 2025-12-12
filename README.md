@@ -1,6 +1,6 @@
 # QQ Group Member Insight
 
-*互联网真小*
+_互联网真小_
 
 主要提供以下三个功能：
 
