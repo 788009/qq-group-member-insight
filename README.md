@@ -134,6 +134,7 @@ python3 app.py --port <port>
 ## 致谢
 
 - [QQDecrypt](https://docs.aaqwq.top/decrypt/description.html): 获取数据库与解密方法参考。
+- [QQBackup/sqlcipher-github-actions](https://github.com/QQBackup/sqlcipher-github-actions): 为 Windows 用户提供了 `sqlcipher` 预编译的可执行文件下载。
 
 ### 许可证
 
