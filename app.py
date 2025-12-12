@@ -601,4 +601,4 @@ def get_user_group_details(qq_id: str, target_user_id: str):
 
 if __name__ == "__main__":
     print("启动 WebUI: http://127.0.0.1:8003")
-    uvicorn.run(app, host="127.0.0.1", port=8003)
+    uvicorn.run(app, host="0.0.0.0", port=8003)
