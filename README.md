@@ -28,7 +28,11 @@
 
   </details>
 
+本工具除了在前端获取 Tailwind CSS 模板，无任何联网功能，所有操作均在本地完成。
+
 ## 使用方法
+
+若不是 Android 或没有 Root，[跳转通用方案](#%E9%80%9A%E7%94%A8%E6%96%B9%E6%A1%88)。
 
 ### Android (需要 Root)
 
@@ -87,7 +91,7 @@ python3 app.py --port <port>
 
 ### 通用方案
 
-本工具在任何平台都可以使用，但需要自行获取 QQ 目录下的 `group_info.db`，且可能需要自行解密。
+本工具在任何平台都可以使用，但需要自行获取 QQ 目录下的 `group_info.db`，且可能需要自行解密，**难度不一定比 Root 低**。
 
 获取数据库与解密参考：[QQDecrypt](https://docs.aaqwq.top/decrypt/description.html)
 
