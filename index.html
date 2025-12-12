@@ -227,15 +227,15 @@
                             <input type="text" id="manual-qq" placeholder="输入目标 QQ 号" class="border p-2 rounded flex-1 dark:bg-slate-950 dark:border-slate-700 dark:text-white dark:placeholder-slate-500">
                             <button onclick="createUserFolder('manual-qq')" class="bg-gray-200 dark:bg-slate-800 hover:bg-gray-300 dark:hover:bg-slate-700 px-3 rounded text-sm text-gray-700 dark:text-slate-300 whitespace-nowrap transition-colors">创建文件夹</button>
                         </div>
-                        <input type="text" id="manual-key" placeholder="解密 Key (可选，若提供则跳过计算)" class="border p-2 rounded w-full dark:bg-slate-950 dark:border-slate-700 dark:text-white dark:placeholder-slate-500">
-                        <input type="text" id="manual-ntuid" placeholder="nt_uid (若无 Key 必须提供)" class="border p-2 rounded w-full dark:bg-slate-950 dark:border-slate-700 dark:text-white dark:placeholder-slate-500">
+                        <input type="text" id="manual-key" placeholder="解密 Key" class="border p-2 rounded w-full dark:bg-slate-950 dark:border-slate-700 dark:text-white dark:placeholder-slate-500">
+                        <input type="text" id="manual-ntuid" placeholder="nt_uid" class="border p-2 rounded w-full dark:bg-slate-950 dark:border-slate-700 dark:text-white dark:placeholder-slate-500">
                     </div>
 
                     <div class="space-y-2 mt-4">
                         <div class="flex items-center justify-between border p-3 rounded hover:bg-gray-50 dark:border-slate-800 dark:hover:bg-slate-800 transition-colors">
                             <div>
                                 <div class="font-bold text-sm dark:text-slate-200">阶段 1: 原始文件</div>
-                                <div class="text-xs text-gray-500 dark:text-slate-400">已放置 group_info.db</div>
+                                <div class="text-xs text-gray-500 dark:text-slate-400">已放置 group_info.db (需 nt_uid 或 Key)</div>
                             </div>
                             <button onclick="runManual('raw')" class="bg-slate-800 dark:bg-slate-700 text-white px-3 py-1 rounded text-sm hover:bg-slate-900 dark:hover:bg-slate-600 transition-colors">执行全流程</button>
                         </div>
@@ -249,7 +249,7 @@
                         <div class="flex items-center justify-between border p-3 rounded hover:bg-gray-50 dark:border-slate-800 dark:hover:bg-slate-800 transition-colors">
                             <div>
                                 <div class="font-bold text-sm dark:text-slate-200">阶段 3: 已解密文件</div>
-                                <div class="text-xs text-gray-500 dark:text-slate-400">已放置 group_info.decrypted.db</div>
+                                <div class="text-xs text-gray-500 dark:text-slate-400">已放置 group_info.decrypted.db (无需 nt_uid 或 Key)</div>
                             </div>
                             <button onclick="runManual('decrypted')" class="bg-slate-800 dark:bg-slate-700 text-white px-3 py-1 rounded text-sm hover:bg-slate-900 dark:hover:bg-slate-600 transition-colors">仅清洗入库</button>
                         </div>
