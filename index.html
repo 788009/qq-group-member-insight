@@ -73,7 +73,7 @@
 
             <!-- 用户选择器 -->
             <div class="relative group">
-                <button onclick="document.getElementById('user-selector-menu').classList.toggle('hidden')" 
+                <button id="user-selector-btn" onclick="document.getElementById('user-selector-menu').classList.toggle('hidden')" 
                         class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-full text-sm font-medium transition-colors border border-transparent dark:border-slate-700">
                     <span id="current-user-display" class="dark:text-slate-300">选择数据源</span>
                     <svg class="w-4 h-4 text-gray-500 dark:text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -316,6 +316,16 @@
             refreshUserList();
             if(currentQQ) selectUser(currentQQ);
             scanTermux();
+        });
+
+        // 点击外部关闭用户选择菜单
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('user-selector-menu');
+            const btn = document.getElementById('user-selector-btn');
+            if (!menu || !btn) return;
+            if (!menu.contains(e.target) && !btn.contains(e.target)) {
+                menu.classList.add('hidden');
+            }
         });
 
         function showError(msg) {
